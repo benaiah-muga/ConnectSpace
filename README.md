@@ -1,141 +1,185 @@
-# 🚀 Welcome to Z.ai Code Scaffold
+# ConnectSpace - Real-time Group Chat Application
 
-A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
+A modern, full-stack real-time group chat platform built with Next.js 15, TypeScript, Tailwind CSS, and WebSockets.
 
-## ✨ Technology Stack
+## Features
 
-This scaffold provides a robust foundation built with:
+### Core Functionality
+- **User Authentication**: Sign up and sign in with secure password hashing
+- **Group Management**: Create, join, and leave groups with optional private/password protection
+- **Real-time Messaging**: Instant message delivery using WebSockets
+- **Member Management**: View group members and real-time join/leave notifications
+- **Search & Discovery**: Find and join public groups
 
-### 🎯 Core Framework
-- **⚡ Next.js 15** - The React framework for production with App Router
-- **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
+### Technical Features
+- **Responsive Design**: Mobile-first design with desktop optimizations
+- **Real-time Updates**: WebSocket integration for instant messaging
+- **Type Safety**: Full TypeScript implementation
+- **Modern UI**: Beautiful interface using shadcn/ui components
+- **Database**: SQLite with Prisma ORM for type-safe database operations
 
-### 🧩 UI Components & Styling
-- **🧩 shadcn/ui** - High-quality, accessible components built on Radix UI
-- **🎯 Lucide React** - Beautiful & consistent icon library
-- **🌈 Framer Motion** - Production-ready motion library for React
-- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
+## Technology Stack
 
-### 📋 Forms & Validation
-- **🎣 React Hook Form** - Performant forms with easy validation
-- **✅ Zod** - TypeScript-first schema validation
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **UI Components**: shadcn/ui (New York style)
+- **Database**: SQLite with Prisma ORM
+- **Real-time**: Socket.IO for WebSocket communication
+- **Authentication**: Custom implementation with bcryptjs
 
-### 🔄 State Management & Data Fetching
-- **🐻 Zustand** - Simple, scalable state management
-- **🔄 TanStack Query** - Powerful data synchronization for React
-- **🌐 Axios** - Promise-based HTTP client
-
-### 🗄️ Database & Backend
-- **🗄️ Prisma** - Next-generation Node.js and TypeScript ORM
-- **🔐 NextAuth.js** - Complete open-source authentication solution
-
-### 🎨 Advanced UI Features
-- **📊 TanStack Table** - Headless UI for building tables and datagrids
-- **🖱️ DND Kit** - Modern drag and drop toolkit for React
-- **📊 Recharts** - Redefined chart library built with React and D3
-- **🖼️ Sharp** - High performance image processing
-
-### 🌍 Internationalization & Utilities
-- **🌍 Next Intl** - Internationalization library for Next.js
-- **📅 Date-fns** - Modern JavaScript date utility library
-- **🪝 ReactUse** - Collection of essential React hooks for modern development
-
-## 🎯 Why This Scaffold?
-
-- **🏎️ Fast Development** - Pre-configured tooling and best practices
-- **🎨 Beautiful UI** - Complete shadcn/ui component library with advanced interactions
-- **🔒 Type Safety** - Full TypeScript configuration with Zod validation
-- **📱 Responsive** - Mobile-first design principles with smooth animations
-- **🗄️ Database Ready** - Prisma ORM configured for rapid backend development
-- **🔐 Auth Included** - NextAuth.js for secure authentication flows
-- **📊 Data Visualization** - Charts, tables, and drag-and-drop functionality
-- **🌍 i18n Ready** - Multi-language support with Next Intl
-- **🚀 Production Ready** - Optimized build and deployment settings
-- **🤖 AI-Friendly** - Structured codebase perfect for AI assistance
-
-## 🚀 Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see your application running.
-
-## 🤖 Powered by Z.ai
-
-This scaffold is optimized for use with [Z.ai](https://chat.z.ai) - your AI assistant for:
-
-- **💻 Code Generation** - Generate components, pages, and features instantly
-- **🎨 UI Development** - Create beautiful interfaces with AI assistance  
-- **🔧 Bug Fixing** - Identify and resolve issues with intelligent suggestions
-- **📝 Documentation** - Auto-generate comprehensive documentation
-- **🚀 Optimization** - Performance improvements and best practices
-
-Ready to build something amazing? Start chatting with Z.ai at [chat.z.ai](https://chat.z.ai) and experience the future of AI-powered development!
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── app/                 # Next.js App Router pages
-├── components/          # Reusable React components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-└── lib/                # Utility functions and configurations
+├── app/
+│   ├── api/                    # API routes
+│   │   ├── auth/              # Authentication endpoints
+│   │   └── groups/            # Group management endpoints
+│   ├── group/[groupId]/       # Chat room page
+│   ├── lobby/                 # Group lobby page
+│   └── page.tsx               # Authentication page
+├── components/ui/             # shadcn/ui components
+├── lib/
+│   ├── db.ts                  # Prisma database client
+│   └── socket.ts              # WebSocket server setup
+└── prisma/
+    └── schema.prisma          # Database schema
 ```
 
-## 🎨 Available Features & Components
+## Database Schema
 
-This scaffold includes a comprehensive set of modern web development tools:
+### User
+- `id`: Unique identifier
+- `username`: Unique username
+- `email`: Unique email address
+- `passwordHash`: Hashed password
+- `createdAt/updatedAt`: Timestamps
 
-### 🧩 UI Components (shadcn/ui)
-- **Layout**: Card, Separator, Aspect Ratio, Resizable Panels
-- **Forms**: Input, Textarea, Select, Checkbox, Radio Group, Switch
-- **Feedback**: Alert, Toast (Sonner), Progress, Skeleton
-- **Navigation**: Breadcrumb, Menubar, Navigation Menu, Pagination
-- **Overlay**: Dialog, Sheet, Popover, Tooltip, Hover Card
-- **Data Display**: Badge, Avatar, Calendar
+### Group
+- `id`: Unique identifier
+- `name`: Group name
+- `description`: Optional description
+- `isPrivate`: Privacy setting
+- `password`: Optional password for private groups
+- `ownerId`: Group owner reference
 
-### 📊 Advanced Data Features
-- **Tables**: Powerful data tables with sorting, filtering, pagination (TanStack Table)
-- **Charts**: Beautiful visualizations with Recharts
-- **Forms**: Type-safe forms with React Hook Form + Zod validation
+### Message
+- `id`: Unique identifier
+- `content`: Message content
+- `timestamp`: Send time
+- `userId`: Sender reference
+- `groupId`: Group reference
 
-### 🎨 Interactive Features
-- **Animations**: Smooth micro-interactions with Framer Motion
-- **Drag & Drop**: Modern drag-and-drop functionality with DND Kit
-- **Theme Switching**: Built-in dark/light mode support
+### MembersOnGroups (Join Table)
+- `userId`: User reference
+- `groupId`: Group reference
+- `joinedAt`: Join timestamp
 
-### 🔐 Backend Integration
-- **Authentication**: Ready-to-use auth flows with NextAuth.js
-- **Database**: Type-safe database operations with Prisma
-- **API Client**: HTTP requests with Axios + TanStack Query
-- **State Management**: Simple and scalable with Zustand
+## Getting Started
 
-### 🌍 Production Features
-- **Internationalization**: Multi-language support with Next Intl
-- **Image Optimization**: Automatic image processing with Sharp
-- **Type Safety**: End-to-end TypeScript with Zod validation
-- **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
 
-## 🤝 Get Started with Z.ai
+### Installation
 
-1. **Clone this scaffold** to jumpstart your project
-2. **Visit [chat.z.ai](https://chat.z.ai)** to access your AI coding assistant
-3. **Start building** with intelligent code generation and assistance
-4. **Deploy with confidence** using the production-ready setup
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
----
+3. Set up the database:
+   ```bash
+   npm run db:push
+   ```
 
-Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Usage
+
+1. **Create an Account**: Sign up with a username, email, and password
+2. **Join/Create Groups**: Browse public groups or create your own
+3. **Start Chatting**: Enter a group and start real-time conversations
+4. **Manage Groups**: Leave groups, view members, and create new communities
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/signup` - Create new user account
+- `POST /api/auth/signin` - Authenticate user
+
+### Groups
+- `GET /api/groups` - Get user's groups and public groups
+- `POST /api/groups` - Create new group
+- `GET /api/groups/[groupId]` - Get group details
+- `POST /api/groups/[groupId]/join` - Join a group
+- `POST /api/groups/[groupId]/leave` - Leave a group
+- `GET /api/groups/[groupId]/messages` - Get group messages
+- `POST /api/groups/[groupId]/messages` - Send message
+- `GET /api/groups/[groupId]/members` - Get group members
+
+### WebSocket Events
+- `authenticate` - Authenticate WebSocket connection
+- `join_group` - Join group room
+- `leave_group` - Leave group room
+- `send_message` - Send message to group
+- `new_message` - Receive new message
+- `user_joined/user_left` - Member status updates
+
+## Development
+
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run db:push` - Push schema changes to database
+
+### Code Quality
+- TypeScript for type safety
+- ESLint for code linting
+- Prisma for type-safe database operations
+- Modern React patterns with hooks
+
+## Features in Detail
+
+### Authentication System
+- Secure password hashing with bcryptjs
+- Session management via localStorage
+- Protected routes with authentication checks
+
+### Real-time Messaging
+- WebSocket integration using Socket.IO
+- Instant message delivery
+- Connection status indicators
+- Fallback to HTTP polling when WebSocket unavailable
+
+### Responsive Design
+- Mobile-first approach
+- Touch-friendly interface
+- Adaptive layouts for different screen sizes
+- Slide-out member panel on mobile
+
+### Group Management
+- Public and private groups
+- Password-protected groups
+- Group ownership and permissions
+- Member management
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
