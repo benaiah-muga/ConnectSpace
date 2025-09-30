@@ -42,16 +42,37 @@ export default function LobbyPage() {
     }
   }, [user, isLoaded])
 
-  // Fetch groups
+  // Fetch groups and sync user
   useEffect(() => {
     if (user) {
+      syncUser()
       fetchGroups()
     }
   }, [user])
 
+  const syncUser = async () => {
+    try {
+      await fetch('/api/temp/users/sync', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: user?.emailAddresses?.[0]?.emailAddress,
+          username: user?.username,
+          firstName: user?.firstName,
+          lastName: user?.lastName
+        })
+      })
+    } catch (err) {
+      console.error('Failed to sync user:', err)
+    }
+  }
+
   const fetchGroups = async () => {
     try {
-      const response = await fetch('/api/groups')
+      // Use temporary storage API for demo
+      const response = await fetch('/api/temp/groups')
       if (!response.ok) throw new Error('Failed to fetch groups')
       
       const data = await response.json()
@@ -76,7 +97,8 @@ export default function LobbyPage() {
     }
 
     try {
-      const response = await fetch('/api/groups', {
+      // Use temporary storage API for demo
+      const response = await fetch('/api/temp/groups', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
@@ -98,7 +120,8 @@ export default function LobbyPage() {
 
   const handleJoinGroup = async (groupId: string, requiresPassword = false) => {
     try {
-      const response = await fetch(`/api/groups/${groupId}/join`, {
+      // Use temporary storage API for demo
+      const response = await fetch(`/api/temp/groups/${groupId}/join`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
