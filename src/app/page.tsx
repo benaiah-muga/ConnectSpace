@@ -1,6 +1,7 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
+import { SignInButton, SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -47,12 +48,16 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button asChild className="w-full">
-              <a href="/sign-in">Sign In</a>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <a href="/sign-up">Sign Up</a>
-            </Button>
+            <SignedOut>
+              <div className="space-y-2">
+                <SignInButton mode="modal">
+                  <Button className="w-full">Sign In</Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button variant="outline" className="w-full">Sign Up</Button>
+                </SignUpButton>
+              </div>
+            </SignedOut>
           </CardContent>
         </Card>
       </div>

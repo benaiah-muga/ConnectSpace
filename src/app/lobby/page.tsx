@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser, SignInButton, SignOutButton } from '@clerk/nextjs'
+import { useUser, UserButton } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -220,11 +220,7 @@ export default function LobbyPage() {
                 <Mail className="w-4 h-4" />
                 Messages
               </Button>
-              <SignOutButton>
-                <Button variant="outline">
-                  Sign Out
-                </Button>
-              </SignOutButton>
+              <UserButton />
             </div>
           </div>
         </div>
