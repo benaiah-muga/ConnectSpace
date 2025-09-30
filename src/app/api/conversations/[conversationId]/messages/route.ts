@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { auth } from '@clerk/nextjs/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ groupId: string }> }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const { userId } = await auth()
+    const userId = request.headers.get('x-user-id')
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -15,19 +14,14 @@ export async function GET(
       )
     }
 
-    const { groupId } = await params
+    const { conversationId } = await params
 
-    // Check if user is a member
-    const membership = await db.membersOnGroups.findUnique({
-      where: {
-        userId_groupId: {
-          userId,
-          groupId
-        }
-      }
+    // Check if user is part of this conversation
+    const conversation = await db.conversation.findUnique({
+      where: { id: conversationId }
     })
 
-    if (!membership) {
+    if (!conversation || (conversation.user1Id !== userId && conversation.user2Id !== userId)) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
@@ -35,10 +29,10 @@ export async function GET(
     }
 
     // Get messages
-    const messages = await db.message.findMany({
-      where: { groupId },
+    const messages = await db.directMessage.findMany({
+      where: { conversationId },
       include: {
-        user: {
+        sender: {
           select: {
             username: true
           }
@@ -49,7 +43,7 @@ export async function GET(
 
     return NextResponse.json(messages)
   } catch (error) {
-    console.error('Messages fetch error:', error)
+    console.error('Direct messages fetch error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -59,10 +53,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ groupId: string }> }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const { userId } = await auth()
+    const userId = request.headers.get('x-user-id')
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -71,7 +65,7 @@ export async function POST(
     }
 
     const { content } = await request.json()
-    const { groupId } = await params
+    const { conversationId } = await params
 
     if (!content || !content.trim()) {
       return NextResponse.json(
@@ -80,32 +74,31 @@ export async function POST(
       )
     }
 
-    // Check if user is a member
-    const membership = await db.membersOnGroups.findUnique({
-      where: {
-        userId_groupId: {
-          userId,
-          groupId
-        }
-      }
+    // Check if user is part of this conversation
+    const conversation = await db.conversation.findUnique({
+      where: { id: conversationId }
     })
 
-    if (!membership) {
+    if (!conversation || (conversation.user1Id !== userId && conversation.user2Id !== userId)) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
       )
     }
 
+    // Determine receiver
+    const receiverId = conversation.user1Id === userId ? conversation.user2Id : conversation.user1Id
+
     // Create message
-    const message = await db.message.create({
+    const message = await db.directMessage.create({
       data: {
         content: content.trim(),
-        userId,
-        groupId
+        senderId: userId,
+        receiverId,
+        conversationId
       },
       include: {
-        user: {
+        sender: {
           select: {
             username: true
           }
@@ -113,12 +106,18 @@ export async function POST(
       }
     })
 
+    // Update conversation's last message time
+    await db.conversation.update({
+      where: { id: conversationId },
+      data: { lastMessageAt: new Date() }
+    })
+
     // TODO: Broadcast to WebSocket clients
     // This will be handled by the WebSocket server
 
     return NextResponse.json(message, { status: 201 })
   } catch (error) {
-    console.error('Message creation error:', error)
+    console.error('Direct message creation error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

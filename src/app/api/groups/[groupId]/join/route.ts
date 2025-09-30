@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const userId = request.headers.get('x-user-id')
@@ -15,7 +15,7 @@ export async function POST(
     }
 
     const { password } = await request.json()
-    const groupId = params.groupId
+    const { groupId } = await params
 
     // Check if group exists
     const group = await db.group.findUnique({

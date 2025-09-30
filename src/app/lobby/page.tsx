@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useUser, SignInButton, SignOutButton } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,13 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, Plus, Users, Lock, MessageSquare } from 'lucide-react'
-
-interface User {
-  id: string
-  username: string
-  email: string
-}
+import { Search, Plus, Users, Lock, MessageSquare, Mail } from 'lucide-react'
 
 interface Group {
   id: string
@@ -30,7 +25,7 @@ interface Group {
 }
 
 export default function LobbyPage() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isLoaded } = useUser()
   const [groups, setGroups] = useState<Group[]>([])
   const [myGroups, setMyGroups] = useState<Group[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -41,13 +36,11 @@ export default function LobbyPage() {
 
   // Check authentication
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (!userData) {
+    if (isLoaded && !user) {
       window.location.href = '/'
       return
     }
-    setUser(JSON.parse(userData))
-  }, [])
+  }, [user, isLoaded])
 
   // Fetch groups
   useEffect(() => {
@@ -58,9 +51,7 @@ export default function LobbyPage() {
 
   const fetchGroups = async () => {
     try {
-      const response = await fetch('/api/groups', {
-        headers: { 'x-user-id': user.id }
-      })
+      const response = await fetch('/api/groups')
       if (!response.ok) throw new Error('Failed to fetch groups')
       
       const data = await response.json()
@@ -88,8 +79,7 @@ export default function LobbyPage() {
       const response = await fetch('/api/groups', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user.id
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(groupData)
       })
@@ -111,8 +101,7 @@ export default function LobbyPage() {
       const response = await fetch(`/api/groups/${groupId}/join`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user.id
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
           password: requiresPassword ? joinPassword[groupId] : undefined 
@@ -133,10 +122,7 @@ export default function LobbyPage() {
   const handleLeaveGroup = async (groupId: string) => {
     try {
       const response = await fetch(`/api/groups/${groupId}/leave`, {
-        method: 'POST',
-        headers: {
-          'x-user-id': user.id
-        }
+        method: 'POST'
       })
 
       if (!response.ok) {
@@ -166,7 +152,7 @@ export default function LobbyPage() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Welcome back, {user.username}!</h1>
+              <h1 className="text-3xl font-bold text-slate-900">Welcome back, {user?.firstName || user?.username || 'User'}!</h1>
               <p className="text-slate-600 mt-1">Connect with communities and start chatting</p>
             </div>
             <div className="flex gap-2">
@@ -226,12 +212,19 @@ export default function LobbyPage() {
                   </form>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" onClick={() => {
-                localStorage.removeItem('user')
-                window.location.href = '/'
-              }}>
-                Sign Out
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = '/messages'}
+                className="flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                Messages
               </Button>
+              <SignOutButton>
+                <Button variant="outline">
+                  Sign Out
+                </Button>
+              </SignOutButton>
             </div>
           </div>
         </div>

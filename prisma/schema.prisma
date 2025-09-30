@@ -22,9 +22,13 @@ model User {
   updatedAt    DateTime @updatedAt
   
   // Relationships
-  ownedGroups  Group[]         @relation("GroupOwner")
-  messages     Message[]
-  groups       MembersOnGroups[]
+  ownedGroups      Group[]              @relation("GroupOwner")
+  messages         Message[]
+  groups           MembersOnGroups[]
+  conversations1   Conversation[]       @relation("ConversationUser1")
+  conversations2   Conversation[]       @relation("ConversationUser2")
+  directMessages   DirectMessage[]
+  sentMessages     DirectMessage[]      @relation("MessageSender")
 }
 
 model Group {
@@ -66,4 +70,34 @@ model MembersOnGroups {
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   
   @@unique([userId, groupId])
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  user1Id       String
+  user2Id       String
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relationships
+  user1         User            @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2         User            @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages      DirectMessage[]
+  
+  @@unique([user1Id, user2Id])
+}
+
+model DirectMessage {
+  id            String   @id @default(cuid())
+  content       String
+  timestamp     DateTime @default(now())
+  senderId      String
+  receiverId    String
+  conversationId String
+  
+  // Relationships
+  sender        User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver      User         @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

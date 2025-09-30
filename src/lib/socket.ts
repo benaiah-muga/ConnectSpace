@@ -21,7 +21,7 @@ export const setupSocket = (io: Server) => {
         
         console.log(`User ${user.username} authenticated`);
         
-        // Join user to their groups
+        // Join user to their groups and personal room
         const userGroups = await db.membersOnGroups.findMany({
           where: { userId: user.id },
           select: { groupId: true }
@@ -30,6 +30,9 @@ export const setupSocket = (io: Server) => {
         userGroups.forEach(group => {
           socket.join(group.groupId);
         });
+        
+        // Join user to their personal room for direct messages
+        socket.join(`user:${user.id}`);
         
         socket.emit('authenticated', { success: true });
       } catch (error) {
@@ -140,6 +143,73 @@ export const setupSocket = (io: Server) => {
       } catch (error) {
         console.error('Send message error:', error);
         socket.emit('error', { message: 'Failed to send message' });
+      }
+    });
+
+    // Handle sending direct messages
+    socket.on('send_direct_message', async (data: { conversationId: string; content: string }) => {
+      if (!socket.userId) {
+        socket.emit('error', { message: 'Not authenticated' });
+        return;
+      }
+      
+      try {
+        // Verify user is part of this conversation
+        const conversation = await db.conversation.findUnique({
+          where: { id: data.conversationId }
+        });
+        
+        if (!conversation || (conversation.user1Id !== socket.userId && conversation.user2Id !== socket.userId)) {
+          socket.emit('error', { message: 'Access denied' });
+          return;
+        }
+        
+        // Determine receiver
+        const receiverId = conversation.user1Id === socket.userId ? conversation.user2Id : conversation.user1Id;
+        
+        // Create message in database
+        const message = await db.directMessage.create({
+          data: {
+            content: data.content.trim(),
+            senderId: socket.userId,
+            receiverId,
+            conversationId: data.conversationId
+          },
+          include: {
+            sender: {
+              select: { username: true }
+            }
+          }
+        });
+        
+        // Update conversation's last message time
+        await db.conversation.update({
+          where: { id: data.conversationId },
+          data: { lastMessageAt: new Date() }
+        });
+        
+        // Send message to both users in their personal rooms
+        const messageData = {
+          id: message.id,
+          content: message.content,
+          timestamp: message.timestamp,
+          senderId: message.senderId,
+          receiverId: message.receiverId,
+          conversationId: message.conversationId,
+          sender: message.sender
+        };
+        
+        // Send to sender
+        io.to(`user:${socket.userId}`).emit('new_direct_message', messageData);
+        
+        // Send to receiver
+        io.to(`user:${receiverId}`).emit('new_direct_message', messageData);
+        
+        console.log(`Direct message sent from ${socket.username} to user ${receiverId}`);
+        
+      } catch (error) {
+        console.error('Send direct message error:', error);
+        socket.emit('error', { message: 'Failed to send direct message' });
       }
     });
 

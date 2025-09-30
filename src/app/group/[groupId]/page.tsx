@@ -17,7 +17,8 @@ import {
   MessageSquare, 
   LogOut,
   Menu,
-  X
+  X,
+  Mail
 } from 'lucide-react'
 
 interface User {
@@ -295,6 +296,14 @@ export default function GroupChatPage() {
             >
               <Users className="w-4 h-4 mr-2" />
               {members.length}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.location.href = '/messages'}
+              className="hidden sm:flex"
+            >
+              <Mail className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"

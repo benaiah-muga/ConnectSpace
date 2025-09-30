@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const userId = request.headers.get('x-user-id')
@@ -14,7 +14,7 @@ export async function GET(
       )
     }
 
-    const groupId = params.groupId
+    const { groupId } = await params
 
     // Check if user is a member
     const membership = await db.membersOnGroups.findUnique({
